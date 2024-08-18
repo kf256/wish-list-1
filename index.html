@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            #canvas {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+            }
+            
+            .header_flex {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 150px;
+                
+                font-size: 20px;
+                font-weight: bold;
+                
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-content: space-around;
+            }
+            
+            .header_frame {
+                width: 0px;
+                overflow: hidden;
+                
+                transition: width 1s;
+            }
+            
+            .header {
+                width: fit-content;
+                white-space: nowrap;
+                
+                margin: 0px;
+            }
+            
+            .list {
+                position: absolute;
+                left: 0px;
+                top: 150px;
+                width: 100%;
+                height: calc(100% - 150px);
+                
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-content: space-around;
+                align-items: center;
+                
+                transition: left 0.5s;
+            }
+            
+            .button {
+                margin: 20px;
+                box-shadow: 1px 1px 5px black;
+                border: 2px solid black;
+                border-radius: 20px;
+                padding: 20px;
+                font-size: 50px;
+                height: fit-content;
+            }
+            
+            .info {
+                margin: 20px;
+                box-shadow: 1px 1px 5px black;
+                padding: 20px;
+                font-size: 20px;
+                height: fit-content;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas" width="800" height="600">
+        </canvas>
+        <div class="header_flex">
+            <div id="header_frame" class="header_frame">
+                <div id="header" class="header">
+                </div>
+            </div>
+        </div>
+        <div id="content" class="list">
+        </div>
+        <script>
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            
+            const header_frame = document.getElementById("header_frame");
+            const header = document.getElementById("header");
+            
+            const content = document.getElementById("content");
+            
+            let loc = [];
+            
+            const wishes = [];
+            
+            const wish_list_name = "Sample wish list";
+            
+            class Wish {
+                constructor(list, name = "", details = []) {
+                    this.name = name;
+                    this.details = details;
+                    this.list = list;
+                    
+                    this.index = this.list.length;
+                    this.list.push(this);
+                }
+                
+                remove() {
+                    const itemsBefore = this.list.slice(0, this.index);
+                    const itemsAfter = this.list.slice(this.index+1);
+                    this.list = [].concat(itemsBefore, itemsAfter);
+                    for (let i = this.index; i < this.list.length; i++) {
+                        this.list[i].index--;
+                    }
+                }
+                
+                log() {
+                    console.log(this.name);
+                    for (let i = 0; i < this.details.length; i++) {
+                        switch (this.details[i].type) {
+                            case "text":
+                                console.log(this.details[i].name+":\n"+this.details[i].value);
+                                break;
+                            case "number":
+                                console.log(this.details[i].name+": "+this.details[i].value);
+                                break;
+                            default:
+                                console.log(this.details[i].name+":", this.details[i].value);
+                        }
+                    }
+                }
+                
+                displayButton() {
+                    const button = document.createElement("div");
+                    button.classList.add("button");
+                    button.innerHTML = this.name;
+                    content.appendChild(button);
+                    
+                    button.addEventListener("click", () => {
+                        loc.push(this.index);
+                        display();
+                    });
+                }
+                
+                displayDetails() {
+                    for (let i = 0; i < this.details.length; i++) {
+                        const info = document.createElement("div");
+                        info.classList.add("info");
+                        
+                        switch (this.details[i].type) {
+                            case "text":
+                                info.innerHTML = this.details[i].name+":<br>"+this.details[i].value;
+                                break;
+                            case "number":
+                                info.innerHTML = this.details[i].name+": "+this.details[i].value;
+                                break;
+                            default:
+                                info.innerHTML = this.details[i].name+": "+this.details[i].value;
+                                console.warn(`unknown detail type: "${this.details[i].type}"`);
+                        }
+                        
+                        content.appendChild(info);
+                    }
+                }
+            }
+            
+            async function display() {
+                const headerWidth1 = header.offsetWidth;
+                const header1 = header.innerHTML;
+                updateHeader();
+                const headerWidth2 = header.offsetWidth;
+                
+                header_frame.style.width = headerWidth2+1+"px";
+                if (headerWidth1 > headerWidth2) {
+                    header.innerHTML = header1;
+                    setTimeout(updateHeader, 1000);
+                }
+                
+                document.title = wish_list_name;
+                
+                content.style.left = "-100%";
+                await new Promise(r => setTimeout(r, 500));
+                content.style.left = "0px";
+                
+                content.innerHTML = "";
+                if (loc.length === 0) displayAll();
+                if (loc.length === 1) displayList();
+                if (loc.length === 2) displayDetails();
+            }
+            
+            function displayAll() {
+                for (let i = 0; i < wishes.length; i++) {
+                    const div = document.createElement("div");
+                    div.classList.add("button");
+                    div.innerHTML = wishes[i][0];
+                    content.appendChild(div);
+                    
+                    div.addEventListener("click", () => {
+                        loc.push(i);
+                        display();
+                    });
+                }
+            }
+            
+            function displayList() {
+                const list = wishes[loc[0]][1];
+                for (let i = 0; i < list.length; i++) {
+                    list[i].displayButton();
+                }
+            }
+            
+            function displayDetails() {
+                const list = wishes[loc[0]][1];
+                const wish = list[loc[1]];
+                wish.displayDetails();
+            }
+            
+            function updateHeader() {
+                header.innerHTML = "";
+                header.innerHTML += "<span onclick='if(loc.length!==0){loc=[];display();}'>"+wish_list_name+"</span>";
+                if (loc.length > 0) header.innerHTML += " / <span onclick='if(loc.length!==1){loc=[loc[0]];display();}'>"+wishes[loc[0]][0]+"</span>";
+                if (loc.length > 1) header.innerHTML += " / <span>"+wishes[loc[0]][1][loc[1]].name+"</span>";
+            }
+            
+            const books = [];
+            wishes.push(["Books", books]);
+            
+            new Wish(books, "Celestial Echoes", [{type: "text", name: "author", value: "unknown"}, {type: "text", name: "genre", value: "science fiction"}, {type: "number", name: "year of publication", value: "2124"}]);
+            new Wish(books, "Artificial Intelligence for beginners", [{type: "text", name: "author", value: "AI"}, {type: "text", name: "genre", value: "science"}, {type: "number", name: "year of publication", value: "2023"}]);
+            books[0].log();
+            
+            display();
+        </script>
+    </body>
+</html>
