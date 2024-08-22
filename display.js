@@ -51,7 +51,7 @@ function displayDetails() {
 
 function updateHeader() {
     header.innerHTML = "";
-    header.innerHTML += "<span onclick='if(loc.length!==0){loc=[];display();}'>"+list_name+"</span>";
-    if (loc.length > 0) header.innerHTML += " / <span onclick='if(loc.length!==1){loc=[loc[0]];display();}'>"+list[loc[0]].name+"</span>";
-    if (loc.length > 1) header.innerHTML += " / <span>"+list[loc[0]].wishes[loc[1]].name+"</span>";
+    header.innerHTML += `<div onclick="if(loc.length!==0){loc=[];display();}">${list_name}</div>`;
+    if (loc.length > 0) header.innerHTML += `&gt;<div onclick="if(loc.length!==1){loc=[loc[0]];display();}">${list[loc[0]].name}</div>`;
+    if (loc.length > 1) header.innerHTML += `&gt;<div>${list[loc[0]].wishes[loc[1]].name}</div>`;
 }

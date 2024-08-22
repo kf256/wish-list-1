@@ -36,6 +36,15 @@
     margin: 0px;
 }
 
+.header > * {
+    display: inline-block;
+    margin: 5px;
+    box-shadow: 1px 1px 5px gray;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 5px;
+}
+
 .list {
     position: absolute;
     left: 0px;
